@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WeatherNow — Frontend</title>
+    <meta
+      name="description"
+      content="Responsive weather app frontend with landing screen."
+    />
+
+    <style>
+      :root {
+        --card-bg: rgba(255, 255, 255, 0.85);
+        --accent: #2b9edb;
+        --muted: #6b7280;
+        --glass-blur: 8px;
+        --radius: 16px;
+        --shadow-1: 0 6px 20px rgba(13, 38, 59, 0.12);
+        --shadow-2: 0 10px 30px rgba(13, 38, 59, 0.08);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        body {
+          height: auto;
+          min-height: 100%; /* instead of 100vh */
+        }
+      }
+
+      body {
+        min-height: 100vh;
+        height: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        color: #0f172a;
+        margin: 0;
+        padding: 0;
+        transition: background 0.6s ease;
+        position: relative;
+        overflow-x: hidden;
+        overflow-x: hidden;
+      }
+
+      /* Dynamic Backgrounds */
+      body.sunny {
+        background: linear-gradient(to bottom, #87cefa, #f0f9ff);
+      }
+      body.cloudy {
+        background: linear-gradient(to bottom, #d7d2cc, #304352);
+      }
+      body.night {
+        background: linear-gradient(to bottom, #141e30, #243b55);
+        color: white;
+      }
+      body.rainy {
+        background: linear-gradient(to bottom, #2c3e50, #4ca1af);
+      }
+      body.rainy::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 200%;
+        height: 200%;
+        background-image: radial-gradient(white 1px, transparent 1px);
+        background-size: 20px 20px;
+        opacity: 0.2;
+        animation: rain 1s linear infinite;
+      }
+      @keyframes rain {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(20px);
+        }
+      }
+
+      /* Landing Page */
+      .landing-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .landing {
+        background: var(--card-bg);
+        backdrop-filter: blur(var(--glass-blur));
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-2);
+        padding: 40px 28px;
+        width: 100%;
+        max-width: 500px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        animation: fadeIn 0.8s ease;
+      }
+
+      .landing h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #073959;
+        text-align: center;
+      }
+
+      .landing p {
+        font-size: 14px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .landing .hint {
+        font-size: 12px;
+        color: #999;
+        text-align: center;
+      }
+
+      .hint.error {
+        color: red;
+        text-shadow: red;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      input.error::placeholder {
+        color: red; /* makes placeholder text red */
+        text-shadow: red;
+        font-weight: 600; /* optional */
+      }
+
+      .landing .search {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        max-width: 350px;
+        margin-top: 20px;
+      }
+
+      .landing .search input[type="text"] {
+        flex: 1;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 0;
+        outline: none;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: var(--shadow-1);
+        font-size: 14px;
+      }
+
+      .landing .search button {
+        padding: 12px 18px;
+        border-radius: 12px;
+        border: 0;
+        background: linear-gradient(180deg, var(--accent), #167bb8);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: var(--shadow-2);
+        flex-shrink: 0;
+        min-width: 80px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Main App Container */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        /* remove justify-content: center; */
+        gap: 20px;
+        background: transparent;
+      }
+
+      /*Content Area*/
+      .content-area {
+        flex: 1; /* takes remaining space */
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        align-items: center; /* center cards vertically */
+      }
+
+      /* Header */
+      header.app-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #fff 0%, #e6f6ff 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-1);
+        font-weight: 700;
+        color: var(--accent);
+        font-size: 18px;
+      }
+
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+      }
+
+      .search {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        min-width: 250px;
+      }
+
+      .search input[type="text"] {
+        flex: 1;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 0;
+        outline: none;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: var(--shadow-1);
+        font-size: 14px;
+      }
+
+      .search button {
+        padding: 12px 18px;
+        border-radius: 12px;
+        border: 0;
+        background: linear-gradient(180deg, var(--accent), #167bb8);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: var(--shadow-2);
+        flex-shrink: 0;
+      }
+
+      /* Weather Card */
+      .weather-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(var(--glass-blur));
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: var(--shadow-2);
+        display: grid;
+        grid-template-rows: auto auto auto;
+        gap: 24px;
+        width: 100%;
+      }
+
+      .top-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .location .city {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .location .time {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .temp-block {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        justify-self: end;
+      }
+
+      .temp-info {
+        text-align: right;
+      }
+
+      .temp {
+        font-size: 48px;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 8px;
+      }
+
+      .condition .desc {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      .condition .muted.small {
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .icon-placeholder {
+        width: 64px;
+        height: 64px;
+        flex-shrink: 0;
+      }
+
+      .icon-placeholder svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Details Grid */
+      .details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .detail-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: var(--shadow-1);
+        display: flex;
+        flex-direction: column;
+        min-height: 80px;
+        justify-content: center;
+      }
+
+      .detail-card .label {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .detail-card .value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .note {
+        font-size: 14px;
+        color: var(--muted);
+        text-align: center;
+        font-style: italic;
+      }
+
+      /* Side Panel */
+      /* Ensure side-pane cards always align */
+      .side-pane {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .side-pane .mini-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 220px; /* ensures same base height */
+        max-height: 220px; /* prevents overflow exploding layout */
+        overflow: hidden;
+      }
+
+      .extras-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .extras-scrollable {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 6px;
+      }
+
+      .extras-scrollable::-webkit-scrollbar {
+        width: 6px;
+      }
+      .extras-scrollable::-webkit-scrollbar-thumb {
+        background: rgba(43, 158, 219, 0.5);
+        border-radius: 3px;
+      }
+
+      .mini-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(var(--glass-blur));
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: var(--shadow-2);
+        flex: 1;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .forecast-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+      }
+
+      .forecast-item div:first-child {
+        font-size: 14px;
+        color: var(--muted);
+        width: 50px;
+      }
+
+      .forecast-item .small-icon {
+        font-size: 18px;
+      }
+
+      .forecast-item div:last-child {
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      /* Responsive Design */
+
+      /* Desktop: 1200px and up */
+      @media (min-width: 1200px) {
+        .content-area {
+          grid-template-columns: 2.5fr 1fr;
+        }
+
+        .weather-card {
+          padding: 36px;
+        }
+
+        .temp {
+          font-size: 56px;
+        }
+      }
+
+      /* For tablets and large tablets (768px to 1320px) */
+      @media (min-width: 768px) and (max-width: 1320px) {
+        .content-area {
+          display: flex;
+          flex-direction: column; /* Stack items vertically */
+          gap: 12px; /* small gap, just a few px */
+          align-items: stretch; /* both fill horizontally */
+          padding-top: 5.5rem;
+        }
+
+        .side-pane {
+          display: flex;
+          flex-direction: row; /* Today + Extras side by side */
+          gap: 12px; /* reduced gap between them */
+        }
+
+        .mini-card {
+          flex: 1;
+          min-height: 160px; /* optional: shorter cards if needed */
+        }
+      }
+
+      /* Small tablets: 600px to 767px */
+      @media (min-width: 600px) and (max-width: 767px) {
+        .container {
+          padding: 16px;
+        }
+
+        header.app-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 12px;
+        }
+
+        .search {
+          min-width: auto;
+        }
+
+        .weather-card {
+          padding: 24px;
+        }
+
+        .temp {
+          font-size: 42px;
+        }
+
+        .side-pane {
+          flex-direction: row;
+          gap: 16px;
+        }
+
+        .mini-card {
+          min-height: 160px;
+        }
+      }
+
+      /* Mobile: 320px to 599px */
+      @media (max-width: 599px) {
+        .container {
+          padding: 12px;
+          gap: 16px;
+        }
+
+        header.app-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .brand {
+          justify-content: center;
+        }
+
+        .logo {
+          width: 36px;
+          height: 36px;
+          font-size: 16px;
+        }
+
+        .title {
+          font-size: 18px;
+        }
+
+        .search {
+          min-width: auto;
+        }
+
+        .weather-card {
+          padding: 20px;
+        }
+
+        .top-row {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+
+        .temp-block {
+          justify-self: center;
+          flex-direction: row-reverse;
+          gap: 12px;
+        }
+
+        .temp-info {
+          text-align: center;
+        }
+
+        .temp {
+          font-size: 36px;
+        }
+
+        .condition .desc {
+          font-size: 16px;
+        }
+
+        .icon-placeholder {
+          width: 48px;
+          height: 48px;
+        }
+
+        .details {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .detail-card {
+          padding: 16px;
+          min-height: 70px;
+        }
+
+        .side-pane {
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .mini-card {
+          min-height: 140px;
+          padding: 20px;
+        }
+
+        .landing {
+          padding: 24px 20px;
+        }
+
+        .landing h1 {
+          font-size: 24px;
+        }
+
+        .landing .search {
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .landing .search input[type="text"],
+        .landing .search button {
+          width: 100%;
+          min-width: auto;
+        }
+      }
+
+      /* Very small mobile: 320px and below */
+      @media (max-width: 320px) {
+        .container {
+          padding: 8px;
+        }
+
+        .weather-card {
+          padding: 16px;
+        }
+
+        .temp {
+          font-size: 32px;
+        }
+
+        .mini-card {
+          padding: 16px;
+          min-height: 120px;
+        }
+      }
+
+      /* Loading skeleton text */
+      .loading {
+        font-style: italic;
+        color: #2b9edb;
+        font-weight: 600;
+      }
+
+      /* Live clock styling for city time */
+      #local-time.live-clock {
+        font-family: monospace;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+      }
+      /* Card fade/slide in */
+      .fade-in {
+        animation: fadeInUp 0.6s ease;
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      /* Spinner Loader */
+      .loader {
+        margin: 6px auto;
+        border: 3px solid rgba(0, 0, 0, 0.1);
+        border-top: 3px solid var(--accent);
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        animation: spin 1s linear infinite;
+      }
+
+      /* Weather icon bounce */
+      .icon-bounce {
+        animation: bounceIcon 1s ease;
+      }
+      @keyframes bounceIcon {
+        0% {
+          transform: scale(0.8);
+          opacity: 0.2;
+        }
+        60% {
+          transform: scale(1.1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Weather effects container */
+      .weather-effect {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; /* never block clicks */
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      /* ☀️ Glowing Sun */
+      .sun {
+        position: absolute;
+        top: 15%;
+        left: 70%;
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(
+          circle,
+          #ffd93d 40%,
+          #ffc83d 70%,
+          transparent 80%
+        );
+        border-radius: 50%;
+        animation: pulseSun 5s infinite alternate ease-in-out;
+      }
+      @keyframes pulseSun {
+        from {
+          transform: scale(0.9);
+          opacity: 0.8;
+        }
+        to {
+          transform: scale(1.1);
+          opacity: 1;
+        }
+      }
+
+      /* 🌧️ Raindrops */
+      .raindrop {
+        position: absolute;
+        width: 2px;
+        height: 15px;
+        background: rgba(255, 255, 255, 0.7);
+        animation: rainFall linear infinite;
+      }
+      @keyframes rainFall {
+        0% {
+          transform: translateY(-10px);
+          opacity: 0;
+        }
+        20% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh);
+          opacity: 0;
+        }
+      }
+
+      /* ☁️ Cloud */
+      .cloud {
+        position: absolute;
+        background: #fff;
+        border-radius: 50%;
+        opacity: 0.8;
+        animation: floatClouds linear infinite;
+      }
+      @keyframes floatClouds {
+        from {
+          transform: translateX(-250px);
+        }
+        to {
+          transform: translateX(120vw);
+        }
+      }
+
+      /* ❄️ Snowfall */
+      @keyframes snowFall {
+        0% {
+          transform: translateY(-10px);
+          opacity: 0;
+        }
+        20% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh);
+          opacity: 0;
+        }
+      }
+
+      .footer {
+        text-align: center;
+        padding: 12px 20px; /* keep it compact */
+        font-size: 14px;
+        font-weight: 500;
+        color: #073959;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(13, 38, 59, 0.12);
+        max-width: 500px;
+        margin: 0 auto 16px; /* only bottom margin */
+      }
+
+      .footer .author {
+        font-weight: 700;
+        background: linear-gradient(90deg, #2b9edb, #167bb8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      /* Error Modal */
+      .error-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+      .error-box {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        animation: popupIn 0.4s ease;
+      }
+      .error-box h2 {
+        color: #e74c3c;
+        margin-bottom: 10px;
+      }
+      .error-box p {
+        color: #555;
+        margin-bottom: 16px;
+        font-size: 14px;
+      }
+
+      @keyframes popupIn {
+        from {
+          transform: scale(0.7);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body class="sunny">
+    <!-- Weather Effects Layer -->
+    <div class="weather-effect" id="weatherEffect"></div>
+
+    <!-- Landing Screen -->
+    <div id="landing" class="landing-container">
+      <section class="landing">
+        <h1>🌤️ Welcome to WeatherNow</h1>
+        <p>Search for a city to see live weather updates.</p>
+        <p class="hint">Try: Mumbai, London, New York</p>
+        <div class="search">
+          <input
+            id="landing-city-input"
+            type="text"
+            placeholder="Enter city name (e.g. Mumbai)"
+          />
+          <button id="landing-search-btn">Search</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Main Weather App (hidden at first) -->
+    <div id="app" class="container" style="display: none">
+      <header class="app-header">
+        <div class="brand">
+          <div class="logo">WN</div>
+          <div class="title">WeatherNow</div>
+        </div>
+
+        <div class="search">
+          <input
+            id="city-input"
+            type="text"
+            placeholder="Enter city name (e.g. Mumbai)"
+          />
+          <button id="search-btn">Search</button>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <main>
+          <section class="weather-card" aria-live="polite">
+            <div class="top-row">
+              <div class="location">
+                <div id="city-name" class="city">— City Name —</div>
+                <div id="local-time" class="time">— Local time —</div>
+              </div>
+
+              <div class="temp-block">
+                <div class="icon-placeholder" aria-hidden="true">
+                  <div class="icon-placeholder" aria-hidden="true">
+                    <img id="weather-icon" alt="Weather Icon" />
+                  </div>
+                </div>
+
+                <div class="temp-info">
+                  <div id="temp" class="temp">--°C</div>
+                  <div class="condition">
+                    <div id="condition" class="desc">— Condition —</div>
+                    <div id="feels-like" class="muted small">
+                      Feels like: --°C
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="details" aria-label="Weather details">
+              <div class="detail-card">
+                <div class="label">Humidity</div>
+                <div id="humidity" class="value">-- %</div>
+              </div>
+              <div class="detail-card">
+                <div class="label">Wind</div>
+                <div id="wind" class="value">-- km/h</div>
+              </div>
+              <div class="detail-card">
+                <div class="label">Sunrise</div>
+                <div id="sunrise" class="value">--:--</div>
+              </div>
+              <div class="detail-card">
+                <div class="label">Sunset</div>
+                <div id="sunset" class="value">--:--</div>
+              </div>
+            </div>
+
+            <div class="note">
+              Tip: Type a city and press <strong>Search</strong>.
+            </div>
+          </section>
+        </main>
+
+        <aside class="side-pane">
+          <!-- Top card: Today forecast -->
+          <div class="mini-card">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 16px;
+              "
+            >
+              <div>
+                <div style="font-weight: 700">Today</div>
+                <div class="note">Next few hours forecast</div>
+              </div>
+            </div>
+            <div class="forecast-list"></div>
+          </div>
+
+          <!-- Bottom card: Extras -->
+          <div class="mini-card">
+            <div style="font-weight: 700; margin-bottom: 8px">Extras</div>
+            <div class="extras-content" id="extrasContent">
+              <!-- JS will inject UV, Pressure, Humidity, Lifestyle tips etc. -->
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Error / 404 Modal -->
+    <!-- Error Modal -->
+    <div id="error-modal" class="error-modal">
+      <div class="error-box">
+        <h2>❌ City Not Found</h2>
+        <p>Please check spelling or try another city.</p>
+        <div class="search">
+          <input
+            id="error-city-input"
+            type="text"
+            placeholder="Enter city name"
+          />
+          <button id="error-search-btn">Try Again</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      &copy; 2025 Built by <span class="author">Parnava Ghosh</span>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
