@@ -74,8 +74,15 @@ const apiKey = "YOUR_API_KEY";
 
 🎨 Dark mode theme
 
-🤝 Contributing
+## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome!
-Feel free to check issues
+Contributions are welcome, but please **open an issue or discuss with me first** before making a pull request.  
+This helps avoid duplicate work and ensures alignment with the project’s goals.  
+
+1. Fork the repository  
+2. Create a new branch (`git checkout -b feature-branch`)  
+3. Commit your changes  
+4. Push to your fork  
+5. Open a pull request **after approval**  
+
 .
